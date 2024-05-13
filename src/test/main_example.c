@@ -181,21 +181,22 @@ static int appHandshakeHandler(bitstream_t* iStream, bitstream_t* oStream) {
 
 static int appHandshake()
 {
-  bitstream_t stream1;
-  bitstream_t stream2;
+  bitstream_t stream1; // (GS) this will become the EXI stream from the vehicle to the EVSE
+  bitstream_t stream2; // (GS) this will become the EXI stream from the EVSE to the vehicle
 
   uint32_t payloadLengthDec;
   size_t pos1 = V2GTP_HEADER_LENGTH; /* v2gtp header */
   size_t pos2 = 0;
 
-  struct appHandEXIDocument handshake;
-  struct appHandEXIDocument handshakeResp;
+  struct appHandEXIDocument handshake;      // (GS) this structure will be converted to an EXI stream
+  struct appHandEXIDocument handshakeResp;  // (GS) this structure will be converted to an EXI stream
 
   int errn = 0;
 
-  const char* const ns0 = "urn:iso:15118:2:2010:MsgDef";
-  const char* const ns1 = "urn:din:70121:2012:MsgDef";
+  const char* const ns0 = "urn:iso:15118:2:2010:MsgDef";  // (GS) does this represent the protocol (ISO or DIN) used by the EV?
+  const char* const ns1 = "urn:din:70121:2012:MsgDef";    // (GS) does this represent the protocol (ISO or DIN) used by the EV?
 
+  // (GS) initialisation of the streams?
   stream1.size = BUFFER_SIZE;
   stream1.data = buffer1;
   stream1.pos = &pos1;
@@ -204,13 +205,13 @@ static int appHandshake()
   stream2.data = buffer2;
   stream2.pos = &pos2;
 
-  init_appHandEXIDocument(&handshake);
+  init_appHandEXIDocument(&handshake); // (GS) just zero-initialises fields 'supportedAppProtocolReq_isUsed' and 'supportedAppProtocolRes_isUsed'
 
   printf("EV side: setup data for the supported application handshake request message\n");
 
   /* set up ISO/IEC 15118 Version 1.0 information */
   handshake.supportedAppProtocolReq_isUsed = 1u;
-  handshake.supportedAppProtocolReq.AppProtocol.arrayLen = 2; /* we have only two protocols implemented */
+  handshake.supportedAppProtocolReq.AppProtocol.arrayLen = 2; /* we have only two protocols implemented */ // (GS) does this mean that the hypothetical EV does only support ISO and DIN?
 
   handshake.supportedAppProtocolReq.AppProtocol.array[0].ProtocolNamespace.charactersLen =
       writeStringToEXIString(ns0, handshake.supportedAppProtocolReq.AppProtocol.array[0].ProtocolNamespace.characters);
@@ -235,11 +236,15 @@ static int appHandshake()
     }
   }
 
+  // (GS) here 'stream1' is ready
+
   if (errn == 0)
   {
     /* read app handshake request & generate response */
     errn = appHandshakeHandler(&stream1, &stream2);
   }
+
+  // (GS) here 'stream2' is ready
 
   if (errn == 0)
   {
