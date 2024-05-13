@@ -52,7 +52,8 @@ extern "C" {
 
 #define UNION_YES 1
 #define UNION_NO 2
-#define SAVE_MEMORY_WITH_UNNAMED_UNION UNION_YES
+// #define SAVE_MEMORY_WITH_UNNAMED_UNION UNION_YES
+#define SAVE_MEMORY_WITH_UNNAMED_UNION UNION_NO
 
 /* Complex type name='urn:iso:15118:2:2010:AppProtocol,AppProtocolType',  base type name='anyType',  content type='ELEMENT',  isAbstract='false',  hasTypeId='false',  final='0',  block='0',  particle='(ProtocolNamespace,VersionNumberMajor,VersionNumberMinor,SchemaID,Priority)',  derivedBy='RESTRICTION'.  */
 #define appHandAppProtocolType_ProtocolNamespace_CHARACTERS_SIZE 100 /* XML schema facet maxLength for urn:iso:15118:2:2010:AppProtocol,protocolNamespaceType is 100 */
@@ -105,12 +106,12 @@ struct appHandAnonType_supportedAppProtocolReq {
 struct appHandEXIDocument {
 #if SAVE_MEMORY_WITH_UNNAMED_UNION == UNION_YES
 	union {
-#endif /* SAVE_MEMORY_WITH_UNNAMED_UNION == UNION_YES */ 
+#endif /* SAVE_MEMORY_WITH_UNNAMED_UNION == UNION_YES */
 	struct appHandAnonType_supportedAppProtocolReq supportedAppProtocolReq ;
 	struct appHandAnonType_supportedAppProtocolRes supportedAppProtocolRes ;
 #if SAVE_MEMORY_WITH_UNNAMED_UNION == UNION_YES
 	};
-#endif /* SAVE_MEMORY_WITH_UNNAMED_UNION == UNION_YES */ 
+#endif /* SAVE_MEMORY_WITH_UNNAMED_UNION == UNION_YES */
 	unsigned int supportedAppProtocolReq_isUsed:1;
 	unsigned int supportedAppProtocolRes_isUsed:1;
 

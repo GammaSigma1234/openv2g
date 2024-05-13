@@ -192,8 +192,8 @@ static int appHandshake()
 
 	int errn = 0;
 
-	char* ns0 = "urn:iso:15118:2:2010:MsgDef";
-	char* ns1 = "urn:din:70121:2012:MsgDef";
+	const char* const ns0 = "urn:iso:15118:2:2010:MsgDef";
+	const char* const ns1 = "urn:din:70121:2012:MsgDef";
 
 	stream1.size = BUFFER_SIZE;
 	stream1.data = buffer1;
