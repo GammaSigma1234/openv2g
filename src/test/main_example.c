@@ -151,8 +151,9 @@ static int appHandshakeHandler(bitstream_t* iStream, bitstream_t* oStream) {
 
 	printf("EVSE side: List of application handshake protocols of the EV \n");
 
-	for(i=0;i<exiDoc.supportedAppProtocolReq.AppProtocol.arrayLen;i++) {
-		printf("\tProtocol entry #=%d\n",(i+1));
+	for(i = 0; i < exiDoc.supportedAppProtocolReq.AppProtocol.arrayLen; i++)
+	{
+		printf("\tProtocol entry #=%d\n", (i + 1));
 		printf("\t\tProtocolNamespace=");
 		printASCIIString(exiDoc.supportedAppProtocolReq.AppProtocol.array[i].ProtocolNamespace.characters, exiDoc.supportedAppProtocolReq.AppProtocol.array[i].ProtocolNamespace.charactersLen);
 		printf("\t\tVersion=%d.%d\n", exiDoc.supportedAppProtocolReq.AppProtocol.array[i].VersionNumberMajor, exiDoc.supportedAppProtocolReq.AppProtocol.array[i].VersionNumberMinor);
@@ -160,17 +161,17 @@ static int appHandshakeHandler(bitstream_t* iStream, bitstream_t* oStream) {
 		printf("\t\tPriority=%d\n", exiDoc.supportedAppProtocolReq.AppProtocol.array[i].Priority);
 	}
 
-	/* prepare response handshake response:
-	 * it is assumed, we support the 15118 1.0 version :-) */
+	/* prepare response handshake response: it is assumed we support the 15118 1.0 version :-) */
 	init_appHandEXIDocument(&appHandResp);
 	appHandResp.supportedAppProtocolRes_isUsed = 1u;
 	appHandResp.supportedAppProtocolRes.ResponseCode = appHandresponseCodeType_OK_SuccessfulNegotiation;
-	appHandResp.supportedAppProtocolRes.SchemaID = exiDoc.supportedAppProtocolReq.AppProtocol.array[0].SchemaID; /* signal the protocol by the provided schema id*/
+	appHandResp.supportedAppProtocolRes.SchemaID = exiDoc.supportedAppProtocolReq.AppProtocol.array[0].SchemaID; /* signal the protocol by the provided schema id */
 	appHandResp.supportedAppProtocolRes.SchemaID_isUsed = 1u;
 
 	*oStream->pos = V2GTP_HEADER_LENGTH;
-	if( (errn = encode_appHandExiDocument(oStream, &appHandResp)) == 0) {
-		errn = write_v2gtpHeader(oStream->data, (*oStream->pos)-V2GTP_HEADER_LENGTH, V2GTP_EXI_TYPE);
+	if( (errn = encode_appHandExiDocument(oStream, &appHandResp)) == 0)
+	{
+		errn = write_v2gtpHeader(oStream->data, (*oStream->pos) - V2GTP_HEADER_LENGTH, V2GTP_EXI_TYPE);
 	}
 
 
@@ -226,25 +227,32 @@ static int appHandshake()
 	handshake.supportedAppProtocolReq.AppProtocol.array[1].Priority = 2;
 
 	/* send app handshake request */
-	if( (errn = encode_appHandExiDocument(&stream1, &handshake)) == 0) {
-		if ( write_v2gtpHeader(stream1.data, pos1-V2GTP_HEADER_LENGTH, V2GTP_EXI_TYPE) == 0 ) {
+	if( (errn = encode_appHandExiDocument(&stream1, &handshake)) == 0)
+	{
+		if ( write_v2gtpHeader(stream1.data, pos1 - V2GTP_HEADER_LENGTH, V2GTP_EXI_TYPE) == 0 )
+		{
 			printf("EV side: send message to the EVSE\n");
 		}
 	}
 
-	if (errn == 0) {
+	if (errn == 0)
+	{
 		/* read app handshake request & generate response */
 		errn = appHandshakeHandler(&stream1, &stream2);
 	}
 
-	if (errn == 0) {
+	if (errn == 0)
+	{
 		/* check response */
-		if ( (errn = read_v2gtpHeader(stream2.data, &payloadLengthDec)) == 0) {
+		if ( (errn = read_v2gtpHeader(stream2.data, &payloadLengthDec)) == 0)
+		{
 			pos2 = V2GTP_HEADER_LENGTH;
 
-			if(decode_appHandExiDocument(&stream2, &handshakeResp) == 0) {
+			if(decode_appHandExiDocument(&stream2, &handshakeResp) == 0)
+			{
 				printf("EV side: Response of the EVSE \n");
-				if(handshakeResp.supportedAppProtocolRes.ResponseCode == appHandresponseCodeType_OK_SuccessfulNegotiation) {
+				if(handshakeResp.supportedAppProtocolRes.ResponseCode == appHandresponseCodeType_OK_SuccessfulNegotiation)
+				{
 					printf("\t\tResponseCode=OK_SuccessfulNegotiation\n");
 					printf("\t\tSchemaID=%d\n",handshakeResp.supportedAppProtocolRes.SchemaID);
 				}
@@ -253,13 +261,12 @@ static int appHandshake()
 
 	}
 
-	if (errn != 0) {
+	if (errn != 0)
+	{
 		printf("appHandshake error %d \n", errn);
 	}
 
-
 	return errn;
-
 }
 
 
