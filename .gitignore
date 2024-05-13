@@ -25,3 +25,6 @@ install_manifest.txt
 
 # Various
 openv2g.pc
+
+# Artifacts
+*.exe

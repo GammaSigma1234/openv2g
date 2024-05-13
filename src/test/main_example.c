@@ -91,7 +91,7 @@ uint8_t buffer2[BUFFER_SIZE];
 #define ERROR_UNEXPECTED_WELDING_DETECTION_RESP_MESSAGE -614
 
 
-static int writeStringToEXIString(char* string, exi_string_character_t* exiString) {
+static int writeStringToEXIString(const char* const string, exi_string_character_t* exiString) {
 	int pos = 0;
 	while(string[pos]!='\0')
 	{
