@@ -128,26 +128,28 @@ static void copyBytes(uint8_t* from, uint16_t len, uint8_t* to) {
 
 
 /** Example implementation of the app handshake protocol for the EVSE side  */
-static int appHandshakeHandler(bitstream_t* iStream, bitstream_t* oStream) {
+static int appHandshakeHandler(bitstream_t* iStream, bitstream_t* oStream)
+{
   struct appHandEXIDocument appHandResp;
   int i;
   struct appHandEXIDocument exiDoc;
   int errn = 0;
   uint32_t payloadLengthDec;
 
+  // (GS) decoding the 'stream1' EXI stream coming from 'appHandshake' into structure 'exiDoc'
 
-  if ( (errn = read_v2gtpHeader(iStream->data, &payloadLengthDec)) == 0) {
+  if ( (errn = read_v2gtpHeader(iStream->data, &payloadLengthDec)) == 0)
+  {
     *iStream->pos = V2GTP_HEADER_LENGTH;
-    if( (errn = decode_appHandExiDocument(iStream, &exiDoc)) ) {
+    if( (errn = decode_appHandExiDocument(iStream, &exiDoc)) )
+    {
       /* an error occured */
       return errn;
     }
 
   }
 
-
-
-
+  // (GS) just a print on terminal of the handshake protocols supported by the EV
 
   printf("EVSE side: List of application handshake protocols of the EV \n");
 
@@ -161,7 +163,7 @@ static int appHandshakeHandler(bitstream_t* iStream, bitstream_t* oStream) {
     printf("\t\tPriority=%d\n", exiDoc.supportedAppProtocolReq.AppProtocol.array[i].Priority);
   }
 
-  /* prepare response handshake response: it is assumed we support the 15118 1.0 version :-) */
+  /* prepare response handshake response: it is assumed we support the 15118 1.0 version :-) */ // (GS) here the content of 'array[1]', i.e. the DIN protocol, is ignored, probably because we are simulating an EVSE that only manages ISO1 and not DIN (?)
   init_appHandEXIDocument(&appHandResp);
   appHandResp.supportedAppProtocolRes_isUsed = 1u;
   appHandResp.supportedAppProtocolRes.ResponseCode = appHandresponseCodeType_OK_SuccessfulNegotiation;
@@ -209,19 +211,19 @@ static int appHandshake()
 
   printf("EV side: setup data for the supported application handshake request message\n");
 
-  /* set up ISO/IEC 15118 Version 1.0 information */
+  /* set up ISO/IEC 15118 Version 1.0 information */ // (GS) are we simulating the operations on the vehicle side here?
   handshake.supportedAppProtocolReq_isUsed = 1u;
-  handshake.supportedAppProtocolReq.AppProtocol.arrayLen = 2; /* we have only two protocols implemented */ // (GS) does this mean that the hypothetical EV does only support ISO and DIN?
+  handshake.supportedAppProtocolReq.AppProtocol.arrayLen = 2; /* we have only two protocols implemented */ // (GS) does this mean that the hypothetical EV only supports ISO and DIN?
 
   handshake.supportedAppProtocolReq.AppProtocol.array[0].ProtocolNamespace.charactersLen =
-      writeStringToEXIString(ns0, handshake.supportedAppProtocolReq.AppProtocol.array[0].ProtocolNamespace.characters);
+    writeStringToEXIString(ns0, handshake.supportedAppProtocolReq.AppProtocol.array[0].ProtocolNamespace.characters);
   handshake.supportedAppProtocolReq.AppProtocol.array[0].SchemaID = 1;
   handshake.supportedAppProtocolReq.AppProtocol.array[0].VersionNumberMajor = 1;
   handshake.supportedAppProtocolReq.AppProtocol.array[0].VersionNumberMinor = 0;
   handshake.supportedAppProtocolReq.AppProtocol.array[0].Priority = 1;
 
   handshake.supportedAppProtocolReq.AppProtocol.array[1].ProtocolNamespace.charactersLen =
-      writeStringToEXIString(ns1, handshake.supportedAppProtocolReq.AppProtocol.array[1].ProtocolNamespace.characters);
+    writeStringToEXIString(ns1, handshake.supportedAppProtocolReq.AppProtocol.array[1].ProtocolNamespace.characters);
   handshake.supportedAppProtocolReq.AppProtocol.array[1].SchemaID = 2;
   handshake.supportedAppProtocolReq.AppProtocol.array[1].VersionNumberMajor = 1;
   handshake.supportedAppProtocolReq.AppProtocol.array[1].VersionNumberMinor = 0;
@@ -244,7 +246,7 @@ static int appHandshake()
     errn = appHandshakeHandler(&stream1, &stream2);
   }
 
-  // (GS) here 'stream2' is ready
+  // (GS) here 'stream2' is ready. Below, vehicle response is simulated (?)
 
   if (errn == 0)
   {
@@ -843,7 +845,7 @@ static int charging2()
   errn = request_response2(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.SessionSetupRes_isUsed) {
       /* show results of EVSEs answer message */
       printf("EV side: received response message from EVSE\n");
@@ -878,7 +880,7 @@ static int charging2()
   errn = request_response2(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.ServiceDiscoveryRes_isUsed) {
       /* show results of EVSEs answer message */
       printf("EV side: received response message from EVSE\n");
@@ -941,7 +943,7 @@ static int charging2()
   errn = request_response2(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.ServiceDetailRes_isUsed) {
       serviceDetailRes = exiOut.V2G_Message.Body.ServiceDetailRes;
       /* show results of EVSEs answer message */
@@ -1002,7 +1004,7 @@ static int charging2()
   errn = request_response2(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.PaymentServiceSelectionRes_isUsed) {
       paymentServiceSelectionRes = exiOut.V2G_Message.Body.PaymentServiceSelectionRes;
 
@@ -1057,7 +1059,7 @@ static int charging2()
   errn = request_response2(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.PaymentDetailsRes_isUsed) {
 
       paymentDetailsRes = exiOut.V2G_Message.Body.PaymentDetailsRes;
@@ -1104,7 +1106,7 @@ static int charging2()
   errn = request_response2(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.AuthorizationRes_isUsed) {
 
       /* show results of EVSEs answer message */
@@ -1168,7 +1170,7 @@ static int charging2()
   errn = request_response2(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.ChargeParameterDiscoveryRes_isUsed) {
 
       /* show results of EVSEs answer message */
@@ -1206,7 +1208,7 @@ static int charging2()
   errn = request_response2(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.CableCheckRes_isUsed) {
 
       /* show results of EVSEs answer message */
@@ -1249,7 +1251,7 @@ static int charging2()
   errn = request_response2(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.PreChargeRes_isUsed) {
 
       /* show results of EVSEs answer message */
@@ -1289,7 +1291,7 @@ static int charging2()
   errn = request_response2(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.PowerDeliveryRes_isUsed) {
 
       /* show results of EVSEs answer message */
@@ -1325,7 +1327,7 @@ static int charging2()
   errn = request_response2(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.ChargingStatusRes_isUsed) {
 
       /* show results of EVSEs answer message */
@@ -1386,7 +1388,7 @@ static int charging2()
   errn = request_response2(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.MeteringReceiptRes_isUsed) {
 
       /* show results of EVSEs answer message */
@@ -1421,7 +1423,7 @@ static int charging2()
   errn = request_response2(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.SessionStopRes_isUsed) {
 
       /* show results of EVSEs answer message */
@@ -1802,7 +1804,8 @@ static int create_response_message1(struct iso1EXIDocument* exiIn, struct iso1EX
 
 /* Adapt this to your system setup! */
 /* In this situation EV and EVSE is the same party */
-static int request_response1(struct iso1EXIDocument* exiIn, struct iso1EXIDocument* exiOut) {
+static int request_response1(struct iso1EXIDocument* exiIn, struct iso1EXIDocument* exiOut)
+{
   int errn;
 
   bitstream_t stream1;
@@ -1824,15 +1827,18 @@ static int request_response1(struct iso1EXIDocument* exiIn, struct iso1EXIDocume
 
   /* --> Start of EVSE side */
   /* deserialize request message */
-  if (errn == 0) {
+  if (errn == 0)
+  {
     errn = deserialize1Stream2EXI(&stream1, exiOut);
   }
   /* create response message */
-  if (errn == 0) {
+  if (errn == 0)
+  {
     errn = create_response_message1(exiOut, exiIn);
   }
   /* serialize response message */
-  if (errn == 0) {
+  if (errn == 0)
+  {
     errn = serialize1EXI2Stream(exiIn, &stream2);
   }
   /* <-- End of EVSE side */
@@ -1840,7 +1846,8 @@ static int request_response1(struct iso1EXIDocument* exiIn, struct iso1EXIDocume
 
   /* EV side */
   /* deserialize response message */
-  if (errn == 0) {
+  if (errn == 0)
+  {
     errn = deserialize1Stream2EXI(&stream2, exiOut);
   }
 
@@ -1890,7 +1897,7 @@ static int charging1()
   errn = request_response1(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.SessionSetupRes_isUsed) {
       /* show results of EVSEs answer message */
       printf("EV side: received response message from EVSE\n");
@@ -1924,7 +1931,7 @@ static int charging1()
   errn = request_response1(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.ServiceDetailRes_isUsed) {
       serviceDetailRes = exiOut.V2G_Message.Body.ServiceDetailRes;
       /* show results of EVSEs answer message */
@@ -1992,7 +1999,7 @@ static int charging1()
   errn = request_response1(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.AuthorizationRes_isUsed) {
 
       /* show results of EVSEs answer message */
@@ -2029,7 +2036,7 @@ static int charging1()
   errn = request_response1(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.CableCheckRes_isUsed) {
 
       /* show results of EVSEs answer message */
@@ -2072,7 +2079,7 @@ static int charging1()
   errn = request_response1(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.PreChargeRes_isUsed) {
 
       /* show results of EVSEs answer message */
@@ -2111,7 +2118,7 @@ static int charging1()
   errn = request_response1(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.PowerDeliveryRes_isUsed) {
 
       /* show results of EVSEs answer message */
@@ -2145,7 +2152,7 @@ static int charging1()
   errn = request_response1(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.ChargingStatusRes_isUsed) {
 
       /* show results of EVSEs answer message */
@@ -2191,7 +2198,7 @@ static int charging1()
   errn = request_response1(&exiIn, &exiOut);
 
   if(errn == 0) {
-    /* check, if this is the right response message */
+    /* check if this is the right response message */
     if(exiOut.V2G_Message.Body.SessionStopRes_isUsed) {
 
       /* show results of EVSEs answer message */
