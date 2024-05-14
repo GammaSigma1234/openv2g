@@ -130,13 +130,13 @@ static void copyBytes(uint8_t* from, uint16_t len, uint8_t* to) {
 /** Example implementation of the app handshake protocol for the EVSE side  */
 static int appHandshakeHandler(bitstream_t* iStream, bitstream_t* oStream)
 {
-  struct appHandEXIDocument appHandResp;
+  struct appHandEXIDocument appHandResp; // (GS) will be used to prepare the handshake response to be encoded into the output stream 'oStream'
   int i;
-  struct appHandEXIDocument exiDoc;
+  struct appHandEXIDocument exiDoc; // (GS) will be used to decode the input stream 'iStream'
   int errn = 0;
   uint32_t payloadLengthDec;
 
-  // (GS) decoding the 'stream1' EXI stream coming from 'appHandshake' into structure 'exiDoc'
+  // (GS) decoding the 'stream1' EXI stream coming from 'appHandshake' function into structure 'exiDoc'
 
   if ( (errn = read_v2gtpHeader(iStream->data, &payloadLengthDec)) == 0)
   {
@@ -149,7 +149,8 @@ static int appHandshakeHandler(bitstream_t* iStream, bitstream_t* oStream)
 
   }
 
-  // (GS) just a print on terminal of the handshake protocols supported by the EV
+  // (GS) now structure 'exiDoc' has been decoded, and it can be read
+  // (GS) below is just a print on the terminal of the handshake protocols supported by the EV
 
   printf("EVSE side: List of application handshake protocols of the EV \n");
 
@@ -163,12 +164,14 @@ static int appHandshakeHandler(bitstream_t* iStream, bitstream_t* oStream)
     printf("\t\tPriority=%d\n", exiDoc.supportedAppProtocolReq.AppProtocol.array[i].Priority);
   }
 
-  /* prepare response handshake response: it is assumed we support the 15118 1.0 version :-) */ // (GS) here the content of 'array[1]', i.e. the DIN protocol, is ignored, probably because we are simulating an EVSE that only manages ISO1 and not DIN (?)
+  /* prepare handshake response: it is assumed we support the 15118 1.0 version :-) */ // (GS) here the content of 'array[1]', i.e. the DIN protocol, is ignored, probably because we are simulating an EVSE that only manages ISO1 and not DIN (?)
   init_appHandEXIDocument(&appHandResp);
   appHandResp.supportedAppProtocolRes_isUsed = 1u;
   appHandResp.supportedAppProtocolRes.ResponseCode = appHandresponseCodeType_OK_SuccessfulNegotiation;
   appHandResp.supportedAppProtocolRes.SchemaID = exiDoc.supportedAppProtocolReq.AppProtocol.array[0].SchemaID; /* signal the protocol by the provided schema id */
   appHandResp.supportedAppProtocolRes.SchemaID_isUsed = 1u;
+
+  // (GS) encoding of structure 'appHandResp' into output EXI stream 'oStream'
 
   *oStream->pos = V2GTP_HEADER_LENGTH;
   if( (errn = encode_appHandExiDocument(oStream, &appHandResp)) == 0)
@@ -217,14 +220,14 @@ static int appHandshake()
 
   handshake.supportedAppProtocolReq.AppProtocol.array[0].ProtocolNamespace.charactersLen =
     writeStringToEXIString(ns0, handshake.supportedAppProtocolReq.AppProtocol.array[0].ProtocolNamespace.characters);
-  handshake.supportedAppProtocolReq.AppProtocol.array[0].SchemaID = 1;
+  handshake.supportedAppProtocolReq.AppProtocol.array[0].SchemaID = 1; // (GS) does this value (1) have any particular meaning for the SchemaID?
   handshake.supportedAppProtocolReq.AppProtocol.array[0].VersionNumberMajor = 1;
   handshake.supportedAppProtocolReq.AppProtocol.array[0].VersionNumberMinor = 0;
   handshake.supportedAppProtocolReq.AppProtocol.array[0].Priority = 1;
 
   handshake.supportedAppProtocolReq.AppProtocol.array[1].ProtocolNamespace.charactersLen =
     writeStringToEXIString(ns1, handshake.supportedAppProtocolReq.AppProtocol.array[1].ProtocolNamespace.characters);
-  handshake.supportedAppProtocolReq.AppProtocol.array[1].SchemaID = 2;
+  handshake.supportedAppProtocolReq.AppProtocol.array[1].SchemaID = 2; // (GS) does this value (2) have any particular meaning for the SchemaID?
   handshake.supportedAppProtocolReq.AppProtocol.array[1].VersionNumberMajor = 1;
   handshake.supportedAppProtocolReq.AppProtocol.array[1].VersionNumberMinor = 0;
   handshake.supportedAppProtocolReq.AppProtocol.array[1].Priority = 2;
@@ -840,7 +843,7 @@ static int charging2()
   exiIn.V2G_Message.Body.SessionSetupReq.EVCCID.bytesLen = 1;
   exiIn.V2G_Message.Body.SessionSetupReq.EVCCID.bytes[0] = 10;
 
-  printf("EV side: call EVSE sessionSetup");
+  printf("EV side: call EVSE sessionSetup\n");
 
   errn = request_response2(&exiIn, &exiOut);
 
@@ -1854,13 +1857,14 @@ static int request_response1(struct iso1EXIDocument* exiIn, struct iso1EXIDocume
   return errn;
 }
 
+// (GS) simulates a charging session between Electric Vehicle (EV) and Charging Station (EVSE)
 static int charging1()
 {
   int errn = 0;
   int i, j;
 
-  struct iso1EXIDocument exiIn;
-  struct iso1EXIDocument exiOut;
+  struct iso1EXIDocument exiIn;   // unencoded structure containing data to be encoded into an EXI stream
+  struct iso1EXIDocument exiOut;  // unencoded structure containing data to be encoded into an EXI stream
 
   struct iso1ServiceDetailResType serviceDetailRes;
   struct iso1PaymentDetailsResType paymentDetailsRes;
@@ -1892,7 +1896,7 @@ static int charging1()
   exiIn.V2G_Message.Body.SessionSetupReq.EVCCID.bytesLen = 1;
   exiIn.V2G_Message.Body.SessionSetupReq.EVCCID.bytes[0] = 10;
 
-  printf("EV side: call EVSE sessionSetup");
+  printf("EV side: call EVSE sessionSetup\n");
 
   errn = request_response1(&exiIn, &exiOut);
 
